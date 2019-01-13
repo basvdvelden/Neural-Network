@@ -16,14 +16,14 @@ def matrix(numIN, numON):
     return matrix
 
 
-class Neuralnetwork:
+class NeuralNetwork:
 
     def __init__(self, numIN, numON, numHL):
         self.hidden_layers = []
         for i in range(numHL):
-            self.hidden_layers.append(Hidden_layer(numIN))
+            self.hidden_layers.append(HiddenLayer(numIN))
 
-        self.output_layer = Output_layer(numIN, numON)
+        self.output_layer = OutputLayer(numIN, numON)
 
     def train(self, t_inputs, t_targets):
         self.feed_forward(t_inputs)
@@ -57,6 +57,7 @@ class Neuralnetwork:
             for w in range(len(self.output_layer.neurons[o].weights)):
                 pd_E_wrt_weight = ol_deltas[o] * self.output_layer.neurons[o].inputs[w]
                 self.output_layer.neurons[o].weights[w] -= LN * pd_E_wrt_weight
+        
         hl_i = len(self.hidden_layers) - 1
         for hl_d in range(len(hls_deltas)):
             for n in range(len(self.hidden_layers[hl_i].neurons)):
@@ -75,7 +76,7 @@ class Neuralnetwork:
         return self.output_layer.feed_forward(ifo)
 
 
-class Hidden_layer:
+class HiddenLayer:
 
     def __init__(self, numIN):
 
@@ -92,7 +93,7 @@ class Hidden_layer:
         return outputs
 
 
-class Output_layer:
+class OutputLayer:
 
     def __init__(self, numIN, numON):
 
@@ -118,13 +119,13 @@ class Neuron:
 
     def weighted_sum(self, weights, inputs, bias):
         ind = 0
-        weightedI = []
+        weighted_input = []
         for i in weights:
             output = i * inputs[ind]
-            weightedI.append(output)
+            weighted_input.append(output)
             ind += 1
 
-        list = sum(weightedI) + bias
+        list = sum(weighted_input) + bias
         return list
 
     def sigmoid(self, prediction):
@@ -145,28 +146,7 @@ class Neuron:
         ol_delta = (self.output - targets[index]) * self.output * (1 - self.output)
         return ol_delta
 
-
-weights = [[0.26856514922872443, 0.7117178160585179],
-                [0.4172784679387201, 0.38762207679470084],
-                [0.8768646443034509, 0.8874950739268259],
-                [0.7755826121501472, 0.9137807264228759],
-                [-1.2206865162527685, -1.2771241326844318],
-                [-1.3881856587737795, -1.3271400854089164],
-                [-2.841992219619289, -2.369305963443983],
-                [-2.811097677545093, -2.342484662260413]]
-nn = Neuralnetwork(2, 2, 3)
-inputs = [[10, 25], [20, 50], [12, 30], [6, 15], [4, 16], [6, 24], [5, 20], [3, 12]]
-targets = [[1, 0], [1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1], [0, 1]]
-for i in range(10000):
-    for n in range(len(inputs)):
-        nn.train(inputs[n], targets[n])
-print(nn.feed_forward([10, 25]))
-print(nn.feed_forward([20, 50]))
-print(nn.feed_forward([6, 24]))
-print(nn.feed_forward([3, 12]))
-print(nn.feed_forward([9, 36]))
-for hl in range(len(nn.hidden_layers)):
-    for hl_n in range(len(nn.hidden_layers[hl].neurons)):
-        print(nn.hidden_layers[hl].neurons[hl_n].weights)
-for ol_n in range(len(nn.output_layer.neurons)):
-    print(nn.output_layer.neurons[ol_n].weights)
+# NeuralNetwork(num_of_inputs, num_of_outputs, num_of_hidden_layers)
+# nn = NeuralNetwork(2, 2, 3)
+# inputs = [[10, 25], [20, 50], [12, 30], [6, 15], [4, 16], [6, 24], [5, 20], [3, 12]]
+# targets = [[1, 0], [1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1], [0, 1]]
