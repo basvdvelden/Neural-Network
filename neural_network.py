@@ -146,7 +146,3 @@ class Neuron:
         ol_delta = (self.output - targets[index]) * self.output * (1 - self.output)
         return ol_delta
 
-# NeuralNetwork(num_of_inputs, num_of_outputs, num_of_hidden_layers)
-# nn = NeuralNetwork(2, 2, 3)
-# inputs = [[10, 25], [20, 50], [12, 30], [6, 15], [4, 16], [6, 24], [5, 20], [3, 12]]
-# targets = [[1, 0], [1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1], [0, 1]]
