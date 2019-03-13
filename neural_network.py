@@ -35,6 +35,11 @@ def sigmoid(activation):
 class NeuralNetwork(object):
 
     def __init__(self, num_in, num_out, num_hls):
+        """        
+        :param num_in: amount of input neurons
+        :param num_out: amount of output neurons
+        :param num_hls: amount of hidden layers
+        """
         self.output_layer = Layer(num_in, num_out)
         self.hidden_layers = []
         for num_hl in range(num_hls):
@@ -58,7 +63,7 @@ class NeuralNetwork(object):
         :type inputs: list
         :type targets: list
         """
-        output = self.feed_forward(inputs)
+        self.feed_forward(inputs)
 
         output_errors = np.array([], dtype=float)
 
@@ -69,6 +74,7 @@ class NeuralNetwork(object):
             for ind, neuron in enumerate(self.output_layer.neurons):
                 neuron.update_weights(output_errors[ind])
             return
+        
         hidden_layers = deepcopy(self.hidden_layers)
         hl_errors = [[]]
         hidden_layer = hidden_layers[len(self.hidden_layers) - 1]
@@ -103,15 +109,16 @@ class NeuralNetwork(object):
         return True
 
     def update_weights(self, out_errors, hl_errors, hidden_layers):
+        """
+        Update all weights in the network.
+        :param out_errors: array of output layer errors
+        :param hl_errors: array of arrays of hidden layer errors
+        :param hidden_layers: hidden layers to update weights
+        """
         self.output_layer.update_bias(sum(out_errors))
+        
         for output_error, neuron in zip(out_errors, self.output_layer.neurons):
             neuron.update_weights(output_error)
-
-        # hidden_layer = self.hidden_layers[len(self.hidden_layers) - 1]
-        #
-        # for neuron in hidden_layer.neurons:
-        #     for output_error in out_errors:
-        #         neuron.update_weights(output_error)
 
         for ind, hl in enumerate(hidden_layers):
             hl.update_bias(sum(hl_errors[ind]))
@@ -122,12 +129,17 @@ class NeuralNetwork(object):
 
 class Layer(object):
     def __init__(self, num_in, num_out, bias=None):
+        """
+        :param num_in: amount of inputs per neuron of this layer
+        :param num_out: amount of neurons of this layer
+        :param bias: default is 1
+        """
         self.bias = bias if bias else 1
         self.matrix = np.array(matrix(num_in, num_out))
         self.neurons = []
 
         for num_neuron in range(num_out):
-            self.neurons.append(Neuron(self.matrix[num_neuron]))
+            self.neurons.append(Neuron(self.matrix[num_neuron], self.bias))
 
         self.inputs = None
 
@@ -144,13 +156,21 @@ class Layer(object):
         return outputs
 
     def update_bias(self, error):
+        """
+        Updates bias of this layer.
+        :param error: sum of errors of this layer
+        """
         gradient = error * LN
         self.bias -= gradient
 
 
 class Neuron(object):
-    def __init__(self, weights):
-        self.bias = 1
+    def __init__(self, weights, bias):
+        """
+        :param weights: array of weights
+        :param bias: bias of this neuron's layer
+        """
+        self.bias = bias
         self.weights = weights
         self.out = None
         self.inputs = None
@@ -174,12 +194,27 @@ class Neuron(object):
         return result
 
     def get_output_layer_error(self, target):
+        """
+        Return error of output layer, only called if this neuron is in output layer.
+        :param target: target output
+        :return: 2 * (self.out - target) * (1 - self.out) * self.out
+        """
         return 2 * (self.out - target) * (1 - self.out) * self.out
 
     def get_hidden_layer_error(self, prev_errors, weights):
+        """
+        Returns error of this neuron. Only called if this neuron is in a hidden layer
+        :param prev_errors: errors of 1 layer in front of this layer
+        :param weights: weights of 1 layer in front of this layer
+        :return: self.out * (1 - self.out) * np.dot(prev_errors, weights) * 2
+        """
         return self.out * (1 - self.out) * np.dot(prev_errors, weights) * 2
 
     def update_weights(self, error):
+        """
+        Update all weights of this neuron.
+        :param error: this neuron's error
+        """
         for ind, weight in enumerate(self.weights):
             gradient = error * self.inputs[ind] * LN
             weight -= gradient
