@@ -2,7 +2,7 @@ import random as rnd
 import numpy as np
 from copy import deepcopy
 
-LN = 0.05
+LN = 0.1
 
 
 def matrix(num_in, num_out):
@@ -38,7 +38,7 @@ class NeuralNetwork(object):
         self.output_layer = Layer(num_in, num_out)
         self.hidden_layers = []
         for num_hl in range(num_hls):
-            self.hidden_layers.append(Layer(num_in, num_out))
+            self.hidden_layers.append(Layer(num_in, num_in))
 
     def feed_forward(self, inputs):
         """
@@ -59,15 +59,16 @@ class NeuralNetwork(object):
         :type targets: list
         """
         output = self.feed_forward(inputs)
-        if round(output[0]) == round(targets[0]) and round(output[1]) == round(targets[1]):
-            return False
 
         output_errors = np.array([], dtype=float)
 
         for ind, output_neuron in enumerate(self.output_layer.neurons):
             error = output_neuron.get_output_layer_error(targets[ind])
             output_errors = np.insert(output_errors, ind, error)
-
+        if not self.hidden_layers:
+            for ind, neuron in enumerate(self.output_layer.neurons):
+                neuron.update_weights(output_errors[ind])
+            return
         hidden_layers = deepcopy(self.hidden_layers)
         hl_errors = [[]]
         hidden_layer = hidden_layers[len(self.hidden_layers) - 1]
@@ -153,7 +154,6 @@ class Neuron(object):
         self.weights = weights
         self.out = None
         self.inputs = None
-        self.partial_derivative_of_net_output_wrt_weights = None
 
     def weighted_sum(self, inputs):
         """
@@ -184,32 +184,3 @@ class Neuron(object):
             gradient = error * self.inputs[ind] * LN
             weight -= gradient
             self.weights[ind] = weight
-
-
-
-nn = NeuralNetwork(2, 2, 1)
-train_inputs = ([1 / 3, 1 / 6],
-                [1 / 4, 1 / 20],
-                [1 / 6, 1 / 12],
-                [1 / 5, 1 / 25],
-                [1 / 12, 1 / 24],
-                [1 / 1, 1 / 5],
-                [1 / 18, 1 / 36],
-                [1 / 2, 1 / 10])
-
-train_targets = ([0, 1], [1, 0], [0, 1], [1, 0],
-                 [0, 1], [1, 0], [0, 1], [1, 0])
-
-for _ in range(10000):
-    for inputs, targets in zip(train_inputs, train_targets):
-        nn.train(inputs, targets)
-
-
-print(nn.feed_forward([1 / 3, 1 / 6]))
-print(nn.feed_forward([1 / 6, 1 / 12]))
-print(nn.feed_forward([1 / 12, 1 / 24]))
-print(nn.feed_forward([1 / 18, 1 / 36]))
-print(nn.feed_forward([1 / 1, 1 / 5]))
-print(nn.feed_forward([1 / 2, 1 / 10]))
-print(nn.feed_forward([1 / 4, 1 / 20]))
-print(nn.feed_forward([1 / 5, 1 / 25]))
